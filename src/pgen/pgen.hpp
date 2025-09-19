@@ -137,4 +137,16 @@ TaskStatus ProblemFillTracers(MeshData<Real> *md, const parthenon::SimTime &tm,
 void Cleanup();
 } // namespace turbulence
 
+
+namespace bondi {
+using namespace parthenon::driver::prelude;
+
+void ProblemInitPackageData(ParameterInput *pin, parthenon::StateDescriptor *pkg);
+void InitUserMeshData(ParameterInput *pin);
+void ProblemGenerator(Mesh *pmesh, ParameterInput *pin, MeshData<Real> *md);
+void ClusterUnsplitSrcTerm(MeshData<Real> *md, const parthenon::SimTime &tm,
+                           const Real beta_dt);
+void BondiOuter(std::shared_ptr<MeshBlockData<Real>> &mbd, bool coarse);
+} // namespace bondi
+
 #endif // PGEN_PGEN_HPP_
