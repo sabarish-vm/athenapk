@@ -142,7 +142,7 @@ namespace bondi {
 using namespace parthenon::driver::prelude;
 
 void ProblemInitPackageData(ParameterInput *pin, parthenon::StateDescriptor *pkg);
-void InitUserMeshData(ParameterInput *pin);
+void InitUserMeshData(Mesh *mesh, ParameterInput *pin);
 void ProblemGenerator(Mesh *pmesh, ParameterInput *pin, MeshData<Real> *md);
 void ClusterUnsplitSrcTerm(MeshData<Real> *md, const parthenon::SimTime &tm,
                            const Real beta_dt);
