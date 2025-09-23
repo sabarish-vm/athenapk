@@ -30,9 +30,9 @@ void InitUserMeshData(Mesh *mesh, ParameterInput *pin) {
   gamma = pin->GetReal("hydro", "gamma");
   gm1 = (gamma - 1.0);
   MBH = pin->GetReal("problem/bondi","mbh");
-  rho_infty = pin->GetReal("problem/bondi/gas", "rho");
-  ur_infty = pin->GetReal("problem/bondi/gas", "ur");
-  cs_infty = pin->GetReal("problem/bondi/gas", "cs");
+  rho_infty= pin->GetReal("problem/bondi", "rho_infty");
+  ur_infty = pin->GetReal("problem/bondi", "ur_infty");
+  cs_infty = pin->GetReal("problem/bondi", "cs_infty");
 
   // For polytropic gas : P = k ρ^Γ
   //                    : cs^2 = k Γ ρ^(Γ-1)
