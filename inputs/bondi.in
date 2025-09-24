@@ -69,5 +69,5 @@ code_time_cgs = 3.15576e+07             # 1 yr in s
 rho_infty_cgs = 1e-24                   # cgs
 ur_infty_cgs = 0.0                      # cgs
 cs_infty_cgs = 1e6                      # cgs
-MBH = 10                                # Msun
+mbh  = 10                                # Msun
 
