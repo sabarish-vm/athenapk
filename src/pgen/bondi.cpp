@@ -30,9 +30,17 @@ void InitUserMeshData(Mesh *mesh, ParameterInput *pin) {
   gamma = pin->GetReal("hydro", "gamma");
   gm1 = (gamma - 1.0);
   MBH = pin->GetReal("problem/bondi","mbh");
-  rho_infty= pin->GetReal("problem/bondi", "rho_infty");
-  ur_infty = pin->GetReal("problem/bondi", "ur_infty");
-  cs_infty = pin->GetReal("problem/bondi", "cs_infty");
+  const Real rho_infty_cgs = pin->GetReal("problem/bondi", "rho_infty_cgs");
+  const Real cs_infty_cgs = pin->GetReal("problem/bondi", "cs_infty_cgs");
+  const Real ur_infty_cgs = pin->GetReal("problem/bondi", "ur_infty_cgs");
+
+  ur_infty = ur_infty_cgs  * units.cm_s();
+  cs_infty = cs_infty_cgs  * units.cm_s();
+  rho_infty= rho_infty_cgs * units.g_cm3();
+
+  // ur_infty = pin->GetReal("problem/bondi", "ur_infty");
+  // cs_infty = pin->GetReal("problem/bondi", "cs_infty");
+  // rho_infty= pin->GetReal("problem/bondi", "rho_infty");
 
   // For polytropic gas : P = k ρ^Γ
   //                    : cs^2 = k Γ ρ^(Γ-1)
@@ -77,13 +85,17 @@ void ProblemGenerator(MeshBlock *pmb, ParameterInput *pin) {
             DEFAULT_LOOP_PATTERN, "Cluster::ProblemGenerator::UniformGas",
             parthenon::DevExecSpace(), kb.s, kb.e, jb.s, jb.e, ib.s, ib.e,
             KOKKOS_LAMBDA(const int &k, const int &j, const int &i) {
+
                 Real volume =  coords.CellVolume(k,j,i) ;
+                // TODO : Verify volume calculation
+                Real mass = rho_infty * volume ;
+
                 // A simple setup for now. Needs to be improved
                 u(IDN, k, j, i) = rho_infty;
                 // TODO: Check if momentum or velocity should be updated or if momentum can be updated
                    // later based on the primitive::velocity
-                u(IM1, k, j, i) = ur_infty;
                 prim(IV1, k, j, i) = ur_infty;
+                u(IM1, k, j, i) = mass * ur_infty;
                 u(IEN, k, j, i) = en_den_infty * volume;
                 prim(IPR,k,i,j) = pres_infty;
             });
@@ -103,15 +115,20 @@ void ProblemInitPackageData(ParameterInput *pin, parthenon::StateDescriptor *hyd
 
 void BondiOuter(std::shared_ptr<MeshBlockData<Real>> &mbd, bool coarse) {
   auto pmb = mbd->GetBlockPointer();
+  auto &coords = pmb->coords;
   auto cons = mbd->PackVariables(std::vector<std::string>{"cons"}, coarse);
+  auto &prim = mbd->Get("prim").data;
   const auto nb = IndexRange{0, 0};
   const bool fine = false;
   pmb->par_for_bndry(
       "BondiOuter", nb, IndexDomain::outer_x1, parthenon::TopologicalElement::CC,
       coarse, fine, KOKKOS_LAMBDA(const int &, const int &k, const int &j, const int &i) {
+        Real volume = coords.CellVolume(k,j,i);
+        Real mass = rho_infty * volume;
         cons(IDN, k, j, i) = rho_infty;
-        // TODO: Check if velocity can be used for BCs
-        cons(IM1, k, j, i) = ur_infty;
+        // TODO: Check and understand BCs in FVM better
+        cons(IM1, k, j, i) = mass * ur_infty;
+        prim(IPR,k,i,j) = pres_infty;
       });
 }
 
