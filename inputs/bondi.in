@@ -67,7 +67,7 @@ code_time_cgs = 2.70916404670302e+11    # Bondi units in s
 
 <problem/bondi>
 rho_infty_cgs = 1e-18                   # cgs
-ur_infty_cgs = 0.0                      # cgs
+ur_infty_cgs = 1                        # cgs
 cs_infty_cgs = 1e6                      # cgs
 mbh  = 1                                # Msun
 
