@@ -115,16 +115,14 @@ int main(int argc, char *argv[]) {
     Hydro::ProblemSourceFirstOrder = turbulence::Driving;
     pman.app_input->InitMeshBlockUserData = turbulence::SetPhases;
     pman.app_input->MeshBlockUserWorkBeforeOutput = turbulence::UserWorkBeforeOutput;
-  }
-    else if (problem == "bondi"){
+  } else if (problem == "bondi"){
     // pman.app_input->RegisterBoundaryCondition(parthenon::BoundaryFace::outer_x1,
     //                                           "bondi_outer", bondi::BondiOuter);
-    pman.app_input->ProblemGenerator = bondi::ProblemGenerator;
     pman.app_input->InitUserMeshData = bondi::InitUserMeshData;
-    Hydro::ProblemSourceUnsplit = bondi::BondiUnsplitSrcTerm;
-    Hydro::ProblemInitPackageData = bondi::ProblemInitPackageData;
-    }
-    else {
+    pman.app_input->ProblemGenerator = bondi::ProblemGenerator;
+    // Hydro::ProblemSourceUnsplit = bondi::BondiUnsplitSrcTerm;
+     Hydro::ProblemInitPackageData = bondi::ProblemInitPackageData;
+    } else {
     // parthenon throw error message for the invalid problem
     std::stringstream msg;
     msg << "Problem ID '" << problem << "' is not implemented yet.";
