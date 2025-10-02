@@ -74,6 +74,7 @@ void InitUserMeshData(Mesh *mesh, ParameterInput *pin) {
   msg << "## Pressure at infinity " << pres_infty / units.dyne_cm2() << " dyne/cm^2" << std::endl;
   msg << "## Energy density at infinity " << en_den_infty / units.erg() / (units.cm() * units.cm() * units.cm()) << " erg/cm^3" << std::endl;
   msg << "## Polytropic constant " << polytropic_constant / k_units_cgs << " [cgs]" << std::endl;
+  std::cout << msg.str();
 }
 
 void ProblemGenerator(MeshBlock *pmb, ParameterInput *pin) {
@@ -99,14 +100,15 @@ void ProblemGenerator(MeshBlock *pmb, ParameterInput *pin) {
                 const Real volume =  4*Kokkos::numbers::pi*r*r*dr ;
                 // TODO : Verify volume calculation
                 Real mass = rho_infty * volume ;
+                Real energy = en_den_infty * volume;
 
                 // A simple setup for now. Needs to be improved
                 u(IDN, k, j, i) = rho_infty;
                 // TODO: Check if momentum or velocity should be used for ICs
-                prim(IV1, k, j, i) = ur_infty;
+                // prim(IV1, k, j, i) = ur_infty;
                 u(IM1, k, j, i) = mass * ur_infty;
-                u(IEN, k, j, i) = en_den_infty * volume;
-                prim(IPR,k,j,i) = pres_infty;
+                u(IEN, k, j, i) = energy;
+                // prim(IPR,k,j,i) = pres_infty;
             });
         });
 }
@@ -139,7 +141,7 @@ void BondiOuter(std::shared_ptr<MeshBlockData<Real>> &mbd, bool coarse) {
         cons(IDN, k, j, i) = rho_infty;
         // TODO: Check and understand BCs in FVM better
         cons(IM1, k, j, i) = mass * ur_infty;
-        prim(IPR,k,i,j) = pres_infty;
+        prim(IPR,k,j,i) = pres_infty;
       });
 }
 
@@ -206,9 +208,9 @@ void SphericalSourceTerm(parthenon::MeshData<parthenon::Real> *md,
         const Real E_c = cons(IEN,k,j,i);
         const Real p = prim(IPR,k,j,i);
 
-         cons(IDN,i,0,0) += beta_dt *  rhoC * uC * abr;
-         cons(IM1,i,0,0) += beta_dt * rhoC * (uC*uC) * abr;
-         cons(IEN,i,0,0) += beta_dt *  uC * (E_c+p) * abr;
+         cons(IDN,0,0,i) += beta_dt *  rhoC * uC * abr;
+         cons(IM1,0,0,i) += beta_dt * rhoC * (uC*uC) * abr;
+         cons(IEN,0,0,i) += beta_dt *  uC * (E_c+p) * abr;
       });
 }
 
