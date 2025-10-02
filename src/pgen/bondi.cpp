@@ -86,31 +86,27 @@ void ProblemGenerator(MeshBlock *pmb, ParameterInput *pin) {
   auto &u = mbd->Get("cons").data;
   auto &coords = pmb->coords;
   auto &prim = mbd->Get("prim").data;
-
-
+  std::cout<<"ib.s " <<ib.s<<std::endl;
+  std::cout<<"ib.e " <<ib.e<<std::endl;
   pmb->par_for(
-      "ProblemGenerator: Bondi", kb.s, kb.e, jb.s, jb.e, ib.s, ib.e,
-      KOKKOS_LAMBDA(const int k, const int j, const int i) {
-        parthenon::par_for(
-            DEFAULT_LOOP_PATTERN, "Cluster::ProblemGenerator::UniformGas",
-            parthenon::DevExecSpace(), kb.s, kb.e, jb.s, jb.e, ib.s, ib.e,
-            KOKKOS_LAMBDA(const int &k, const int &j, const int &i) {
-                Real r = coords.Xc<1>(i);
-                const Real dr = coords.CellWidth<1>(k,j,i);
-                const Real volume =  4*Kokkos::numbers::pi*r*r*dr ;
-                // TODO : Verify volume calculation
-                Real mass = rho_infty * volume ;
-                Real energy = en_den_infty * volume;
-
-                // A simple setup for now. Needs to be improved
-                u(IDN, k, j, i) = rho_infty;
-                // TODO: Check if momentum or velocity should be used for ICs
-                // prim(IV1, k, j, i) = ur_infty;
-                u(IM1, k, j, i) = mass * ur_infty;
-                u(IEN, k, j, i) = energy;
-                // prim(IPR,k,j,i) = pres_infty;
-            });
-        });
+      "ProblemGenerator::Bondi", kb.s, kb.e, jb.s, jb.e, ib.s, ib.e,
+      KOKKOS_LAMBDA(const int &k, const int &j, const int &i) {
+          Real r = coords.Xc<1>(i);
+          const Real dr = coords.CellWidth<1>(k,j,i);
+          const Real volume =  4*Kokkos::numbers::pi*r*r*dr ;
+          // TODO : Verify volume calculation
+          Real mass = rho_infty * volume ;
+          Real energy = en_den_infty * volume;
+  
+          // A simple setup for now. Needs to be improved
+          u(IDN, k, j, i) = rho_infty;
+          // TODO: Check if momentum or velocity should be used for ICs
+          // prim(IV1, k, j, i) = ur_infty;
+          u(IM1, k, j, i) = mass * ur_infty;
+          u(IEN, k, j, i) = energy;
+          //TODO: Check if pressure needs to be updated
+          // prim(IPR,k,j,i) = pres_infty;
+    });
 }
 
 void ProblemInitPackageData(ParameterInput *pin, parthenon::StateDescriptor *hydro_pkg) {
