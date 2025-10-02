@@ -94,19 +94,19 @@ void ProblemGenerator(MeshBlock *pmb, ParameterInput *pin) {
             DEFAULT_LOOP_PATTERN, "Cluster::ProblemGenerator::UniformGas",
             parthenon::DevExecSpace(), kb.s, kb.e, jb.s, jb.e, ib.s, ib.e,
             KOKKOS_LAMBDA(const int &k, const int &j, const int &i) {
-
-                Real volume =  coords.CellVolume(k,j,i) ;
+                Real r = coords.Xc<1>(i);
+                const Real dr = coords.CellWidth<1>(k,j,i);
+                const Real volume =  4*Kokkos::numbers::pi*r*r*dr ;
                 // TODO : Verify volume calculation
                 Real mass = rho_infty * volume ;
 
                 // A simple setup for now. Needs to be improved
                 u(IDN, k, j, i) = rho_infty;
-                // TODO: Check if momentum or velocity should be updated or if momentum can be updated
-                   // later based on the primitive::velocity
+                // TODO: Check if momentum or velocity should be used for ICs
                 prim(IV1, k, j, i) = ur_infty;
                 u(IM1, k, j, i) = mass * ur_infty;
                 u(IEN, k, j, i) = en_den_infty * volume;
-                prim(IPR,k,i,j) = pres_infty;
+                prim(IPR,k,j,i) = pres_infty;
             });
         });
 }
@@ -132,7 +132,9 @@ void BondiOuter(std::shared_ptr<MeshBlockData<Real>> &mbd, bool coarse) {
   pmb->par_for_bndry(
       "BondiOuter", nb, IndexDomain::outer_x1, parthenon::TopologicalElement::CC,
       coarse, fine, KOKKOS_LAMBDA(const int &, const int &k, const int &j, const int &i) {
-        Real volume = coords.CellVolume(k,j,i);
+        const Real r = coords.Xc<1>(i);
+        const Real dr = coords.CellWidth<1>(k,j,i);
+        const Real volume =  4*Kokkos::numbers::pi*r*r*dr ;
         Real mass = rho_infty * volume;
         cons(IDN, k, j, i) = rho_infty;
         // TODO: Check and understand BCs in FVM better
