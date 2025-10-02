@@ -1,0 +1,8 @@
+CompileFlags:
+  Add:
+    - "-Wshadow"
+    - "-std=c++17"
+
+Diagnostics:
+  Suppress:
+    - "unused-parameter"
