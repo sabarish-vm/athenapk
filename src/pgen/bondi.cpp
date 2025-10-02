@@ -60,7 +60,7 @@ void InitUserMeshData(Mesh *mesh, ParameterInput *pin) {
 
   // Energy density at infinity
   // Energy density = P/(Γ-1) + 1/2 u^2 ρ
-  Real en_den_infty = pres_infty /gm1 + 0.5 * ur_infty * ur_infty * rho_infty;
+  en_den_infty = pres_infty /gm1 + 0.5 * ur_infty * ur_infty * rho_infty;
 
   std::stringstream msg;
   msg << std::setprecision(2);
