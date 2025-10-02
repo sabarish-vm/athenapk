@@ -22,7 +22,16 @@
 namespace bondi {
 using namespace parthenon::driver::prelude;
 
-Real rho_infty, cs_infty, ur_infty, pres_infty, en_den_infty ,  polytropic_constant,gamma, gm1, GN, MBH;
+Real rho_infty, cs_infty, ur_infty, pres_infty, en_den_infty ,
+polytropic_constant,gamma, gm1, GN, MBH, rB, cs2_infty;
+
+  inline Real ur_fitting_func(const Real& r, const Real& rinv){
+    constexpr Real norm  = 0.497 ;
+    constexpr Real s1    = 4.016371;
+    constexpr Real s2    = 0.88862;
+    constexpr Real s2inv = 1/s2;
+    return std::sqrt(norm * s1 * rinv * std::pow((1+std::pow(r*s2inv,0.8)),-4.0));
+  };
 
 void InitUserMeshData(Mesh *mesh, ParameterInput *pin) {
   Units units(pin);
@@ -36,11 +45,10 @@ void InitUserMeshData(Mesh *mesh, ParameterInput *pin) {
 
   ur_infty = ur_infty_cgs  * units.cm_s();
   cs_infty = cs_infty_cgs  * units.cm_s();
+  cs2_infty = cs_infty * cs_infty;
   rho_infty= rho_infty_cgs * units.g_cm3();
 
-  // ur_infty = pin->GetReal("problem/bondi", "ur_infty");
-  // cs_infty = pin->GetReal("problem/bondi", "cs_infty");
-  // rho_infty= pin->GetReal("problem/bondi", "rho_infty");
+  rB = GN*MBH/cs2_infty;
 
   // For polytropic gas : P = k ρ^Γ
   //                    : cs^2 = k Γ ρ^(Γ-1)
@@ -49,6 +57,7 @@ void InitUserMeshData(Mesh *mesh, ParameterInput *pin) {
 
   // Units of the polytropic constant in case it is useful
   Real k_units_cgs = units.dyne_cm2() / std::pow(units.g_cm3(),gamma);
+
   // Energy density at infinity
   // Energy density = P/(Γ-1) + 1/2 u^2 ρ
   Real en_den_infty = pres_infty /gm1 + 0.5 * ur_infty * ur_infty * rho_infty;
