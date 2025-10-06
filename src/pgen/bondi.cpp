@@ -14,10 +14,16 @@
 #include "mesh/mesh.hpp"
 #include <parthenon/driver.hpp>
 #include <parthenon/package.hpp>
+#include <pybind11/embed.h>  // for embedding Python
+#include <pybind11/numpy.h>  // for numpy support
+#include <vector>
+
 
 // AthenaPK headers
 #include "../main.hpp"
 #include "../units.hpp"
+
+namespace py = pybind11;
 
 namespace bondi {
 using namespace parthenon::driver::prelude;
@@ -32,6 +38,33 @@ polytropic_constant,gamma, gm1, GN, MBH, rB, cs2_infty;
     constexpr Real s2inv = 1/s2;
     return std::sqrt(norm * s1 * rinv * std::pow((1+std::pow(r*s2inv,0.8)),-4.0));
   };
+
+py::array_t<Real>  init_profile(MeshBlock *pmb){
+    py::scoped_interpreter guard{};
+    // Set paths
+    py::module sys = py::module::import("sys");
+    sys.attr("path").attr("append")(PGEN_DIR);
+    // Import Python module
+    py::module_ mymodule = py::module_::import("bondi");
+    // Get Python function
+    py::object func = mymodule.attr("soln");
+
+    auto &coords = pmb->coords;
+    auto ib = pmb->cellbounds.GetBoundsI(IndexDomain::interior);
+    auto jb = pmb->cellbounds.GetBoundsJ(IndexDomain::interior);
+    auto kb = pmb->cellbounds.GetBoundsK(IndexDomain::interior);
+    std::vector<Real> vec;
+    for (int i = ib.s; i <= ib.e; i++) {
+            const Real r = coords.Xc<1>(i);
+            vec.push_back(r);
+    }
+    std::cout << vec.front() << ", " << vec.back() << std::endl ;
+    py::array_t<Real> input_arr(vec.size(),vec.data());
+    py::array_t<Real> output_arr;
+    const Real gamma_py = gamma ;
+    output_arr = func(gamma,input_arr);
+    return output_arr;
+};
 
 void InitUserMeshData(Mesh *mesh, ParameterInput *pin) {
   Units units(pin);
@@ -88,6 +121,8 @@ void ProblemGenerator(MeshBlock *pmb, ParameterInput *pin) {
   auto &prim = mbd->Get("prim").data;
   std::cout<<"ib.s " <<ib.s<<std::endl;
   std::cout<<"ib.e " <<ib.e<<std::endl;
+  auto ret = init_profile(pmb);
+  std::cout<< ret.at(0) << std::endl;
   pmb->par_for(
       "ProblemGenerator::Bondi", kb.s, kb.e, jb.s, jb.e, ib.s, ib.e,
       KOKKOS_LAMBDA(const int &k, const int &j, const int &i) {

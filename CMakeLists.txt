@@ -6,9 +6,9 @@ cmake_minimum_required(VERSION 3.13)
 
 # Imports machine-specific configuration
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/parthenon/CMakeLists.txt)
-  include(external/parthenon/cmake/MachineCfg.cmake)
+    include(external/parthenon/cmake/MachineCfg.cmake)
 else()
-  message(WARNING
+    message(WARNING
     "Could not find MachineCfg.cmake to process machine config file."
     "If you're using Parthenon as submodule and see this message, please report this bug on GitLab."
     "Using a prebuilt Parthenon library with AthenaPK is currently not tested."
@@ -37,11 +37,11 @@ endif()
 # If the user doesn't specify a build type, prefer Release
 set(default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
-  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
+    message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+    set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
       STRING "Choose the type of build." FORCE)
-  # Set the possible values of build type for cmake-gui
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+    # Set the possible values of build type for cmake-gui
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
@@ -56,11 +56,11 @@ set(Kokkos_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/external/Kokkos)
 # logic for setting up tests.
 set(NUM_MPI_PROC_TESTING "4" CACHE STRING "Number of mpi processors to use when running tests with MPI")
 if (NOT PARTHENON_DISABLE_MPI)
-  find_package(MPI COMPONENTS CXX)
-  if (NOT MPI_FOUND)
-    message(FATAL_ERROR "MPI is required but couldn't be found. "
+    find_package(MPI COMPONENTS CXX)
+    if (NOT MPI_FOUND)
+        message(FATAL_ERROR "MPI is required but couldn't be found. "
     "If you want to build Parthenon without MPI, please rerun CMake with -DPARTHENON_DISABLE_MPI=ON")
-  endif()
+    endif()
 endif()
 
 option(AthenaPK_ENABLE_TESTING "Enable AthenaPK test" ON)
@@ -72,16 +72,22 @@ set(PARTHENON_DISABLE_EXAMPLES ON CACHE BOOL "Don't build Parthenon examples.")
 set(PARTHENON_DISABLE_SPARSE ON CACHE BOOL "Disable sparse (not used in AthenaPK yet)")
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/parthenon/CMakeLists.txt)
-  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/parthenon parthenon)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/parthenon parthenon)
 else()
-  find_package(parthenon REQUIRED)
+    find_package(parthenon REQUIRED)
+endif()
+
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/external/pybind11/CMakeLists.txt)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/pybind11 pybind11)
+else()
+    find_package(pybind11 REQUIRED)
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 add_subdirectory(src)
 
-if (AthenaPK_ENABLE_TESTING)
-  include(CTest)
-  add_subdirectory(tst/regression)
+if(AthenaPK_ENABLE_TESTING)
+    include(CTest)
+    add_subdirectory(tst/regression)
 endif()
 

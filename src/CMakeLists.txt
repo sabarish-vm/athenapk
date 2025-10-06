@@ -30,4 +30,5 @@ add_executable(
 
 add_subdirectory(pgen)
 
-target_link_libraries(athenaPK PRIVATE parthenon)
+target_compile_definitions(athenaPK PRIVATE PGEN_DIR=\"${CMAKE_SOURCE_DIR}/src/pgen\")
+target_link_libraries(athenaPK PRIVATE parthenon pybind11::embed)
