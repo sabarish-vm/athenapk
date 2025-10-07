@@ -16,6 +16,7 @@
 #include <parthenon/package.hpp>
 #include <pybind11/embed.h>  // for embedding Python
 #include <pybind11/numpy.h>  // for numpy support
+#include <tuple>
 #include <vector>
 
 
@@ -40,7 +41,7 @@ mdot;
     return std::sqrt(norm * s1 * rinv * std::pow((1+std::pow(r*s2inv,0.8)),-4.0));
   };
 
-py::array_t<Real>  init_profile(MeshBlock *pmb){
+std::tuple<py::array_t<Real>, py::array_t<Real>> init_profile(MeshBlock *pmb){
     py::scoped_interpreter guard{};
     // Set paths
     py::module sys = py::module::import("sys");
@@ -52,19 +53,20 @@ py::array_t<Real>  init_profile(MeshBlock *pmb){
 
     auto &coords = pmb->coords;
     auto ib = pmb->cellbounds.GetBoundsI(IndexDomain::interior);
-    auto jb = pmb->cellbounds.GetBoundsJ(IndexDomain::interior);
-    auto kb = pmb->cellbounds.GetBoundsK(IndexDomain::interior);
     std::vector<Real> vec;
+    // Loop is only over the interior domain
     for (int i = ib.s; i <= ib.e; i++) {
             const Real r = coords.Xc<1>(i);
             vec.push_back(r);
     }
-    std::cout << vec.front() << ", " << vec.back() << std::endl ;
+    // std::cout << vec.front() << ' ' << vec[1] << ' ' << vec[2] << ' ' << vec[3] << ' ' << vec[4] <<  " ... " << vec.back() << std::endl ;
     py::array_t<Real> input_arr(vec.size(),vec.data());
-    py::array_t<Real> output_arr;
-    const Real gamma_py = gamma ;
-    output_arr = func(gamma,input_arr);
-    return output_arr;
+    py::tuple result = func(gamma,input_arr);
+    mdot = result[0].cast<Real>();
+    py::array_t<Real> rad_vel = result[1].cast<py::array_t<Real>>();
+    py::array_t<Real> rho = result[2].cast<py::array_t<Real>>();
+    auto ret_tuple = std::make_tuple(rad_vel,rho);
+    return ret_tuple;
 };
 
 void InitUserMeshData(Mesh *mesh, ParameterInput *pin) {
@@ -72,6 +74,7 @@ void InitUserMeshData(Mesh *mesh, ParameterInput *pin) {
   GN = units.gravitational_constant();
   gamma = pin->GetReal("hydro", "gamma");
   gm1 = (gamma - 1.0);
+  inv_gm1 = 1/gm1;
   MBH = pin->GetReal("problem/bondi","mbh");
   const Real rho_infty_cgs = pin->GetReal("problem/bondi", "rho_infty_cgs");
   const Real cs_infty_cgs = pin->GetReal("problem/bondi", "cs_infty_cgs");
@@ -120,28 +123,37 @@ void ProblemGenerator(MeshBlock *pmb, ParameterInput *pin) {
   auto &u = mbd->Get("cons").data;
   auto &coords = pmb->coords;
   auto &prim = mbd->Get("prim").data;
-  std::cout<<"ib.s " <<ib.s<<std::endl;
-  std::cout<<"ib.e " <<ib.e<<std::endl;
-  auto ret = init_profile(pmb);
-  std::cout<< ret.at(0) << std::endl;
+  auto profile_tuple = init_profile(pmb);
+  auto rad_vel_vec = std::get<0>(profile_tuple);
+  auto rho_vec = std::get<1>(profile_tuple);
+ 
   pmb->par_for(
       "ProblemGenerator::Bondi", kb.s, kb.e, jb.s, jb.e, ib.s, ib.e,
       KOKKOS_LAMBDA(const int &k, const int &j, const int &i) {
-          Real r = coords.Xc<1>(i);
-          const Real dr = coords.CellWidth<1>(k,j,i);
-          const Real volume =  4*Kokkos::numbers::pi*r*r*dr ;
-          // TODO : Verify volume calculation
-          Real mass = rho_infty * volume ;
-          Real energy = en_den_infty * volume;
-  
-          // A simple setup for now. Needs to be improved
-          u(IDN, k, j, i) = rho_infty;
-          // TODO: Check if momentum or velocity should be used for ICs
-          // prim(IV1, k, j, i) = ur_infty;
-          u(IM1, k, j, i) = mass * ur_infty;
-          u(IEN, k, j, i) = energy;
-          //TODO: Check if pressure needs to be updated
-          // prim(IPR,k,j,i) = pres_infty;
+            // This index offsetting ensures that we map index ib.s to 0 of the vector containing the profile
+            const int vec_ind = i-ib.s;
+
+            const Real r = coords.Xc<1>(i);
+            const Real dr = coords.CellWidth<1>(k,j,i);
+            const Real volume =  4*Kokkos::numbers::pi*r*r*dr ;
+            // TODO : Verify volume calculation : CellWidth vs CellVolume
+
+            const Real rho = rho_vec.at(vec_ind);
+            const Real rad_vel   = rad_vel_vec.at(vec_ind);
+
+            const Real pressure = polytropic_constant * std::pow(rho,gamma);
+            const Real energy_den = pressure * inv_gm1 + 0.5 * rad_vel * rad_vel * rho ;
+            const Real energy = energy_den * volume;
+            const Real mass = rho_infty * volume ;
+
+            u(IDN, k, j, i) = rho;
+            u(IM1, k, j, i) = mass * rad_vel;
+            u(IEN, k, j, i) = energy;
+
+            //TODO: Check if pressure needs to be updated
+            // prim(IPR,k,j,i) = pres_infty;
+            // TODO: Check if momentum or velocity should be used for ICs
+            // prim(IV1, k, j, i) = ur_infty;
     });
 }
 

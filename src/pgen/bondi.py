@@ -31,10 +31,10 @@ def calculate_flow(gamma, mdot, range):
     rs = xs(gamma, mdot)
     if range == "sup":
         xvals = np.logspace(-3, np.log10(0.95 * rs), 500)
-        yvals = np.logspace(0, 5, 500)
+        yvals = np.logspace(0, 5, 1000)
     elif range == "sub":
         xvals = np.logspace(np.log10(1.1 * rs), 2, 500)
-        yvals = np.logspace(-5, 3, 500)
+        yvals = np.logspace(-10, 3, 1000)
     else:
         raise Exception("Range must be chosen. That is either subsonic or supersonic")
     X, Y = np.meshgrid(xvals, yvals)
@@ -65,6 +65,7 @@ def extract(arr):
 
 
 def soln(gamma, arr=None):
+    mdotval = mdot0(gamma)
     c1 = calculate_flow(gamma, mdot0(gamma), "sub")
     x1, y1 = extract(c1)
     c2 = calculate_flow(gamma, mdot0(gamma), "sup")
@@ -77,10 +78,13 @@ def soln(gamma, arr=None):
     y2 = y2[ind2]
     x = np.concatenate((x2, x1))
     y = np.concatenate((y2, y1))
+    y = np.sqrt(y)
     if arr is None:
         return x, y
     else:
         bip = sipt.interp1d(np.log10(x), np.log10(y))
         res = 10.0 ** (bip(np.log10(arr)))
-        res = np.ascontiguousarray(res)
-        return res
+        u_res = np.ascontiguousarray(res)
+        rho_res = mdotval / (arr**2 * u_res)
+
+        return mdotval, u_res, rho_res
