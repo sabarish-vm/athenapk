@@ -97,16 +97,16 @@ void InitUserMeshData(Mesh *mesh, ParameterInput *pin) {
 
   std::stringstream msg;
   msg << std::setprecision(2);
-  msg << "######################################" << std::endl;
-  msg << "######  Bondi problem generator" << std::endl;
-  msg << "#### Input parameters" << std::endl;
-  msg << "## Density at infinity " << rho_infty / units.g_cm3() << " g/cm^3" << std::endl;
-  msg << "## Radial velocity at infinity: " << ur_infty / units.km_s() << " km/s" << std::endl;
-  msg << "## Sound speed at infinity: " << cs_infty / units.km_s() << " km/s" << std::endl;
-  msg << "#### Derived parameters" << std::endl;
-  msg << "## Pressure at infinity " << pres_infty / units.dyne_cm2() << " dyne/cm^2" << std::endl;
-  msg << "## Energy density at infinity " << en_den_infty / units.erg() / (units.cm() * units.cm() * units.cm()) << " erg/cm^3" << std::endl;
-  msg << "## Polytropic constant " << polytropic_constant / k_units_cgs << " [cgs]" << std::endl;
+  msg << "######################################" << '\n';
+  msg << "#############  Bondi problem generator" << '\n';
+  msg << "###### Input parameters" << '\n';
+  msg << "## Density at infinity " << rho_infty << "[code] , " << rho_infty / units.g_cm3() << " [g/cm^3]" << '\n';
+  msg << "## Radial velocity at infinity: " << ur_infty << "[code] , " << ur_infty / units.km_s() << " km/s" << '\n';
+  msg << "## Sound speed at infinity: " << cs_infty << "[code] , " << cs_infty / units.km_s() << " km/s" << '\n';
+  msg << "###### Derived parameters" << '\n';
+  msg << "## Pressure at infinity " << pres_infty << "[code] , " << pres_infty / units.dyne_cm2() << " dyne/cm^2" << '\n';
+  msg << "## Energy density at infinity " << en_den_infty << "[code] , " << en_den_infty / units.erg() / (units.cm() * units.cm() * units.cm()) << " erg/cm^3" << '\n';
+  msg << "## Polytropic constant : " << polytropic_constant << "[code], " << polytropic_constant / k_units_cgs << " [cgs]" << std::endl;
   std::cout << msg.str();
 }
 
