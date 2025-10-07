@@ -29,7 +29,8 @@ namespace bondi {
 using namespace parthenon::driver::prelude;
 
 Real rho_infty, cs_infty, ur_infty, pres_infty, en_den_infty ,
-polytropic_constant,gamma, gm1, GN, MBH, rB, cs2_infty;
+polytropic_constant,gamma, gm1, inv_gm1, GN, MBH, rB, cs2_infty,
+mdot;
 
   inline Real ur_fitting_func(const Real& r, const Real& rinv){
     constexpr Real norm  = 0.497 ;
