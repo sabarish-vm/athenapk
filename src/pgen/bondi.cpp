@@ -33,14 +33,6 @@ Real rho_infty, cs_infty, ur_infty, pres_infty, en_den_infty ,
 polytropic_constant,gamma, gm1, inv_gm1, GN, MBH, rB, cs2_infty,
 mdot;
 
-  inline Real ur_fitting_func(const Real& r, const Real& rinv){
-    constexpr Real norm  = 0.497 ;
-    constexpr Real s1    = 4.016371;
-    constexpr Real s2    = 0.88862;
-    constexpr Real s2inv = 1/s2;
-    return std::sqrt(norm * s1 * rinv * std::pow((1+std::pow(r*s2inv,0.8)),-4.0));
-  };
-
 std::tuple<py::array_t<Real>, py::array_t<Real>> init_profile(MeshBlock *pmb){
     py::scoped_interpreter guard{};
     // Set paths
@@ -54,17 +46,20 @@ std::tuple<py::array_t<Real>, py::array_t<Real>> init_profile(MeshBlock *pmb){
     auto &coords = pmb->coords;
     auto ib = pmb->cellbounds.GetBoundsI(IndexDomain::interior);
     std::vector<Real> vec;
-    // Loop is only over the interior domain
+    // Note that the loop is only over the interior domain
     for (int i = ib.s; i <= ib.e; i++) {
             const Real r = coords.Xc<1>(i);
             vec.push_back(r);
     }
-    // std::cout << vec.front() << ' ' << vec[1] << ' ' << vec[2] << ' ' << vec[3] << ' ' << vec[4] <<  " ... " << vec.back() << std::endl ;
+    // Create a numpy array
     py::array_t<Real> input_arr(vec.size(),vec.data());
+    // Python call
     py::tuple result = func(gamma,input_arr);
+    // Untuple the python tuple
     mdot = result[0].cast<Real>();
     py::array_t<Real> rad_vel = result[1].cast<py::array_t<Real>>();
     py::array_t<Real> rho = result[2].cast<py::array_t<Real>>();
+    // Create a cpp tyuple of density and velocity profile to return
     auto ret_tuple = std::make_tuple(rad_vel,rho);
     return ret_tuple;
 };
@@ -133,7 +128,7 @@ void ProblemGenerator(MeshBlock *pmb, ParameterInput *pin) {
   pmb->par_for(
       "ProblemGenerator::Bondi", kb.s, kb.e, jb.s, jb.e, ib.s, ib.e,
       KOKKOS_LAMBDA(const int &k, const int &j, const int &i) {
-            // This index offsetting ensures that we map index ib.s to 0 of the vector containing the profile
+            // This index offsetting ensures that we map index ib.s to 0 of the numpy array containing the profile
             const int vec_ind = i-ib.s;
 
             const Real r = coords.Xc<1>(i);
