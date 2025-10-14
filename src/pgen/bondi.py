@@ -64,7 +64,7 @@ def extract(arr):
     return t1, t2
 
 
-def soln(gamma, arr=None):
+def soln(gamma, arr):
     mdotval = mdot0(gamma)
     c1 = calculate_flow(gamma, mdot0(gamma), "sub")
     x1, y1 = extract(c1)
@@ -79,12 +79,10 @@ def soln(gamma, arr=None):
     x = np.concatenate((x2, x1))
     y = np.concatenate((y2, y1))
     y = np.sqrt(y)
-    if arr is None:
-        return x, y
-    else:
-        bip = sipt.interp1d(np.log10(x), np.log10(y))
-        res = 10.0 ** (bip(np.log10(arr)))
-        u_res = np.ascontiguousarray(res)
-        rho_res = mdotval / (arr**2 * u_res)
+    bip = sipt.interp1d(np.log10(x), np.log10(y))
+    res = 10.0 ** (bip(np.log10(arr)))
+    u_res = np.ascontiguousarray(res * -1.0)
+    rho_res = mdotval / (arr**2 * res)
+    rho_res = np.ascontiguousarray(rho_res)
 
-        return mdotval, u_res, rho_res
+    return mdotval, u_res, rho_res
