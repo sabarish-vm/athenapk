@@ -141,12 +141,10 @@ void ProblemGenerator(MeshBlock *pmb, ParameterInput *pin) {
 
             const Real pressure = polytropic_constant * std::pow(rho,gamma);
             const Real energy_den = pressure * inv_gm1 + 0.5 * rad_vel * rad_vel * rho ;
-            const Real energy = energy_den * volume;
-            const Real mass = rho_infty * volume ;
 
             u(IDN, k, j, i) = rho;
-            u(IM1, k, j, i) = mass * rad_vel;
-            u(IEN, k, j, i) = energy;
+            u(IM1, k, j, i) = rho * rad_vel;
+            u(IEN, k, j, i) = energy_den;
 
             //TODO: Check if pressure needs to be updated
             // prim(IPR,k,j,i) = pres_infty;
@@ -241,9 +239,7 @@ void SphericalSourceTerm(parthenon::MeshData<parthenon::Real> *md,
         const auto &coords = cons_pack.GetCoords(b);
 
         const Real r = coords.Xc<1>(i);
-        const Real g_r = GN * MBH / (r*r);
 
-        // Apply g_r as a source term
         const Real rhoC = cons(IDN, k, j, i);
         const Real uC = prim(IV1, k, j, i);
         const Real abr = 2/r;
