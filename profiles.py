@@ -31,11 +31,11 @@ class Profiles:
         dd = ds.all_data()
         distances = np.array(dd.fcoords[:, 0])
         prof = (
-            (dd.to_dataframe(["prim_velocity_1", "density"]))
+            (dd.to_dataframe(["prim_velocity_1", "density", "pressure"]))
             .rename({"prim_velocity_1": "ur", "density": "rho"})
             .to_numpy()
         )
-        return prof, ["ur", "rho"], float(ds.current_time), distances
+        return prof, ["ur", "rho", "pressure"], float(ds.current_time), distances
 
     def load_all(self):
         d0, fields, _t, distances = self.__load_single(self.files[0])
