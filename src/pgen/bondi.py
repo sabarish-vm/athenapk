@@ -33,7 +33,7 @@ def calculate_flow(gamma, mdot, range):
         xvals = np.logspace(-3, np.log10(0.95 * rs), 500)
         yvals = np.logspace(0, 5, 1000)
     elif range == "sub":
-        xvals = np.logspace(np.log10(1.1 * rs), 2, 500)
+        xvals = np.logspace(np.log10(1.1 * rs), 2.1, 500)
         yvals = np.logspace(-10, 3, 1000)
     else:
         raise Exception("Range must be chosen. That is either subsonic or supersonic")

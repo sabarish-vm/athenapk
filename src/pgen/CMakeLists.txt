@@ -25,5 +25,6 @@ target_sources(athenaPK PRIVATE
     orszag_tang.cpp
     rand_blast.cpp
     sod.cpp
+    spherical_blast.cpp
     turbulence.cpp
     )

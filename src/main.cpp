@@ -120,8 +120,11 @@ int main(int argc, char *argv[]) {
     //                                           "bondi_outer", bondi::BondiOuter);
     pman.app_input->InitUserMeshData = bondi::InitUserMeshData;
     pman.app_input->ProblemGenerator = bondi::ProblemGenerator;
-    // Hydro::ProblemSourceUnsplit = bondi::BondiUnsplitSrcTerm;
+     Hydro::ProblemSourceUnsplit = bondi::BondiUnsplitSrcTerm;
      Hydro::ProblemInitPackageData = bondi::ProblemInitPackageData;
+    } else if (problem == "sedov_shock"){
+     pman.app_input->ProblemGenerator = sedov_shock::ProblemGenerator;
+     Hydro::ProblemSourceUnsplit = sedov_shock::SphericalSourceTerm;
     } else {
     // parthenon throw error message for the invalid problem
     std::stringstream msg;

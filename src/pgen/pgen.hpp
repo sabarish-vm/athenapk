@@ -145,6 +145,19 @@ void InitUserMeshData(Mesh *mesh, parthenon::ParameterInput *pin);
 void ProblemGenerator(MeshBlock *pmb, parthenon::ParameterInput *pin);
 void BondiUnsplitSrcTerm(MeshData<Real> *md, const parthenon::SimTime &tm,
                            const Real beta_dt);
+void SphericalSourceTerm(MeshData<Real> *md,
+                         const Real beta_dt);
 void BondiOuter(std::shared_ptr<MeshBlockData<Real>> &mbd, bool coarse);
 } // namespace bondi
+//
+namespace sedov_shock{
+
+using namespace parthenon::driver::prelude;
+
+void ProblemInitPackageData(ParameterInput *pin, parthenon::StateDescriptor *pkg);
+void InitUserMeshData(Mesh *mesh, parthenon::ParameterInput *pin);
+void ProblemGenerator(MeshBlock *pmb, parthenon::ParameterInput *pin);
+void SphericalSourceTerm(MeshData<Real> *md, const parthenon::SimTime &tm,
+                         const Real beta_dt);
+}
 #endif // PGEN_PGEN_HPP_
