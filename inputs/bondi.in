@@ -12,7 +12,7 @@ problem_id = bondi
 refinement = none
 nghost = 3
 
-nx1 = 2048
+nx1 = 10240
 x1min = 1e-2
 x1max = 100
 ix1_bc = outflow
@@ -31,7 +31,7 @@ ix3_bc = outflow
 ox3_bc = outflow
 
 <parthenon/meshblock>
-nx1 = 2048
+nx1 = 10240
 nx2 = 1
 nx3 = 1
 
@@ -56,10 +56,10 @@ dt = 0.01
 id = prim
 variables = prim
 
-<units> # Units such that rho_infty is 1, cs_infty is 1, Mbh is 1
-code_length_cgs = 2.70916404670302e+17  # Bondi units in cm
-code_mass_cgs = 1.98840987069805e+34    # Bondi units in g
-code_time_cgs = 2.70916404670302e+11    # Bondi units in s
+<units> # Units such that rho_infty is 1, cs_infty is 1, rB is 1
+code_length_cgs = 1.32712440000000e+15  # Bondi units in cm
+code_mass_cgs = 2.33741002331213e+27    # Bondi units in g
+code_time_cgs = 1.32712440000000e+09    # Bondi units in s
 
 <problem/bondi>
 rho_infty_cgs = 1e-18                   # cgs
