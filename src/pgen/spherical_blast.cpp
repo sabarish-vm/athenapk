@@ -25,7 +25,7 @@ namespace sedov_shock {
 using namespace parthenon::driver::prelude;
 
 const Real rho = 1;
-const Real e0 = 1;
+const Real e0 = 10;
 
 void ProblemGenerator(MeshBlock *pmb, ParameterInput *pin) {
   IndexRange ib = pmb->cellbounds.GetBoundsI(IndexDomain::interior);
@@ -40,17 +40,16 @@ void ProblemGenerator(MeshBlock *pmb, ParameterInput *pin) {
   pmb->par_for(
       "ProblemGenerator::Bondi", kb.s, kb.e, jb.s, jb.e, ib.s, ib.e,
       KOKKOS_LAMBDA(const int &k, const int &j, const int &i) {
-            // This index offsetting ensures that we map index ib.s to 0 of the numpy array containing the profile
-            const int vec_ind = i-ib.s;
 
             const Real r = coords.Xc<1>(i);
 
             u(IDN, k, j, i) = rho;
             u(IM1, k, j, i) = 0.0;
-            if(i==0) {
+            if(i==ib.s) {
                 u(IEN, k, j, i) = e0;
             }
-            u(IEN, k, j, i) = 0.0;
+            else {
+            u(IEN, k, j, i) = 1e-10;}
     });
 }
 
