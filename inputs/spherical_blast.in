@@ -1,0 +1,57 @@
+# AthenaPK - a performance portable block structured AMR MHD code
+# Copyright (c) 2023, Athena Parthenon Collaboration. All rights reserved.
+# Licensed under the BSD 3-Clause License (the "LICENSE");
+
+<comment>
+problem = Spherical blast
+
+<job>
+problem_id = sedov_shock
+
+<parthenon/mesh>
+refinement = none
+nghost = 3
+
+nx1 = 10000
+x1min = 1e-4
+x1max = 100
+ix1_bc = reflecting
+ox1_bc = outflow
+
+nx2 = 1
+x2min = -0.5
+x2max = 0.5
+ix2_bc = outflow
+ox2_bc = outflow
+
+nx3 = 1
+x3min = -0.5
+x3max = 0.5
+ix3_bc = outflow
+ox3_bc = outflow
+
+<parthenon/meshblock>
+nx1 = 10000
+nx2 = 1
+nx3 = 1
+
+<parthenon/time>
+integrator = vl2
+cfl = 0.4
+tlim = 1.0
+nlim = -1
+perf_cycle_offset = 2 # number of inital cycles not to be included in perf calc
+
+<hydro>
+fluid = euler
+eos = adiabatic
+riemann = hllc
+reconstruction = ppm
+gamma = 1.1 # gamma = C_p/C_v
+first_order_flux_correct = true
+
+<parthenon/output0>
+file_type = hdf5
+dt = 0.1
+id = prim
+variables = prim
