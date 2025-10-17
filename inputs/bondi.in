@@ -10,13 +10,13 @@ problem_id = bondi
 
 <parthenon/mesh>
 refinement = none
-nghost = 3
+nghost = 2
 
-nx1 = 10240
-x1min = 1e-2
+nx1 = 512
+x1min = 0.01
 x1max = 100
-ix1_bc = outflow
-ox1_bc = outflow
+ix1_bc = outflow   
+ox1_bc = bondi_outer
 
 nx2 = 1
 x2min = -0.5
@@ -31,28 +31,30 @@ ix3_bc = outflow
 ox3_bc = outflow
 
 <parthenon/meshblock>
-nx1 = 10240
+nx1 = 512 
 nx2 = 1
 nx3 = 1
 
 <parthenon/time>
 integrator = vl2
 cfl = 0.4
-tlim = 1.0
+tlim = 200
 nlim = -1
 perf_cycle_offset = 2 # number of inital cycles not to be included in perf calc
+ncycle_out = 100
 
 <hydro>
 fluid = euler
 eos = adiabatic
 riemann = hllc
-reconstruction = ppm
+reconstruction = plm
 gamma = 1.1 # gamma = C_p/C_v
-first_order_flux_correct = true
+first_order_flux_correct = false
 
 <parthenon/output0>
 file_type = hdf5
-dt = 0.01
+#dt = 1.0 
+dn = 100
 id = prim
 variables = prim
 
@@ -63,7 +65,7 @@ code_time_cgs = 1.32712440000000e+09    # Bondi units in s
 
 <problem/bondi>
 rho_infty_cgs = 1e-18                   # cgs
-ur_infty_cgs = 1                        # cgs
+ur_infty_cgs = -1                        # cgs
 cs_infty_cgs = 1e6                      # cgs
 mbh  = 1                                # Msun
 
